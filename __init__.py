@@ -29,7 +29,7 @@ class Kyobobook(Source):
     name = 'KyoboBook'
     description = _('Downloads metadata and covers from kyobobook.co.kr')
     author = 'YongSeok Choi'
-    version = (0, 1, 0)
+    version = (0, 1, 2)
     minimum_calibre_version = (0, 8, 0)
 
     capabilities = frozenset(['identify', 'cover'])

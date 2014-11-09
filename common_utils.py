@@ -9,17 +9,37 @@ __docformat__ = 'restructuredtext en'
 
 import os
 
-from PyQt4 import QtGui
-from PyQt4.Qt import (Qt, QIcon, QPixmap, QLabel, QDialog, QHBoxLayout,
-                      QTableWidgetItem, QFont, QLineEdit, QComboBox,
-                      QVBoxLayout, QDialogButtonBox, QStyledItemDelegate, QDateTime,
-                      QRegExpValidator, QRegExp, QVariant, QTextEdit,
-                      QListWidget, QAbstractItemView)
+#20141108 16:27:50
+#from PyQt4 import QtGui
+#from PyQt4.Qt import (Qt, QIcon, QPixmap, QLabel, QDialog, QHBoxLayout,
+#                      QTableWidgetItem, QFont, QLineEdit, QComboBox,
+#                      QVBoxLayout, QDialogButtonBox, QStyledItemDelegate, QDateTime,
+#                      QRegExpValidator, QRegExp, QVariant, QTextEdit,
+#                      QListWidget, QAbstractItemView)
+try:
+    from PyQt4 import QtGui
+except ImportError:
+    from PyQt5 import QtGui
+try:
+    from PyQt4.Qt import (Qt, QIcon, QPixmap, QLabel, QDialog, QHBoxLayout,
+                          QTableWidgetItem, QFont, QLineEdit, QComboBox,
+                          QVBoxLayout, QDialogButtonBox, QStyledItemDelegate, QDateTime,
+                          QRegExpValidator, QRegExp, QVariant, QTextEdit,
+                          QListWidget, QAbstractItemView)
+except ImportError:
+    from PyQt5.Qt import (Qt, QIcon, QPixmap, QLabel, QDialog, QHBoxLayout,
+                          QTableWidgetItem, QFont, QLineEdit, QComboBox,
+                          QVBoxLayout, QDialogButtonBox, QStyledItemDelegate, QDateTime,
+                          QRegExpValidator, QRegExp, QVariant, QTextEdit,
+                          QListWidget, QAbstractItemView)
 
 from calibre.constants import iswindows
 from calibre.gui2 import gprefs, error_dialog, UNDEFINED_QDATETIME, info_dialog
 from calibre.gui2.actions import menu_action_unique_name
-from calibre.gui2.complete import MultiCompleteComboBox
+
+#20141108
+#from calibre.gui2.complete import MultiCompleteComboBox
+
 from calibre.gui2.keyboard import ShortcutConfig
 from calibre.gui2.widgets import EnLineEdit
 from calibre.utils.config import config_dir, tweaks

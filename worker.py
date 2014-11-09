@@ -326,6 +326,8 @@ class Worker(Thread): # Get details
                 toc = sanitize_comments_html(toc)
                 comments += '<h3>[목차]</h3><div id="toc">' + toc + "</div>"
             
+        if comments:
+            comments += "<hr />" + '<div><div style="float:right">[kyobobook]</div></div>'
         return comments
 
     def parse_cover(self, root):
@@ -413,7 +415,8 @@ class Worker(Thread): # Get details
                 #self.log.info("Found genres_node")
                 for genre in genres_node:
                     genre = re.sub("\s{2,}"," ",genre.text_content().strip())
-                    calibre_tags.append("[" + genre + "]")
+                    genre = re.sub("^\s*(국내도서|외국도서)\s*>\s*","",genre)
+                    calibre_tags.append("▣" + ".".join(re.split("\s*\>\s*",genre)))
                 
                 
         # tags_list = root.xpath('//div[@id="div_itemtaglist"]//a[contains(@href,"tagname=")]/text()')

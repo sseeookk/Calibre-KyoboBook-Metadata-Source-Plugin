@@ -9,12 +9,27 @@ __docformat__ = 'restructuredtext en'
 
 import copy
 from functools import partial
-from PyQt4 import QtGui
-from PyQt4.Qt import (QLabel,QTableWidgetItem, QVBoxLayout, Qt, QGroupBox, QTableWidget,
-                      QCheckBox, QAbstractItemView, QHBoxLayout, QIcon,
-                      QInputDialog)
+
+#20141108 16:27:50
+#from PyQt4 import QtGui
+#from PyQt4.Qt import (QLabel,QTableWidgetItem, QVBoxLayout, Qt, QGroupBox, QTableWidget,
+#                      QCheckBox, QAbstractItemView, QHBoxLayout, QIcon, QInputDialog)
+try:
+    from PyQt4 import QtGui
+except ImportError:
+    from PyQt5 import QtGui
+try:
+    from PyQt4.Qt import (QLabel,QTableWidgetItem, QVBoxLayout, Qt, QGroupBox, QTableWidget,
+                          QCheckBox, QAbstractItemView, QHBoxLayout, QIcon,QInputDialog)
+except ImportError:
+    from PyQt5.Qt import (QLabel,QTableWidgetItem, QVBoxLayout, Qt, QGroupBox, QTableWidget,
+                          QCheckBox, QAbstractItemView, QHBoxLayout, QIcon,QInputDialog)
+
 from calibre.gui2 import get_current_db, question_dialog, error_dialog
-from calibre.gui2.complete import MultiCompleteLineEdit
+
+#20141108
+#from calibre.gui2.complete import MultiCompleteLineEdit
+
 from calibre.gui2.metadata.config import ConfigWidget as DefaultConfigWidget
 from calibre.utils.config import JSONConfig
 
