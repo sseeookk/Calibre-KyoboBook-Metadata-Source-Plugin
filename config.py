@@ -25,6 +25,11 @@ except ImportError:
     from PyQt5.Qt import (QLabel,QTableWidgetItem, QVBoxLayout, Qt, QGroupBox, QTableWidget,
                           QCheckBox, QAbstractItemView, QHBoxLayout, QIcon,QInputDialog)
 
+try:
+    from PyQt4.QtGui import (QSpinBox)
+except ImportError:
+    from PyQt5.Qt import (QSpinBox)
+                          
 from calibre.gui2 import get_current_db, question_dialog, error_dialog
 
 #20141108
@@ -74,7 +79,7 @@ class ConfigWidget(DefaultConfigWidget):
                              'This will increase the potential likelihood of getting a larger cover\n'
                              'though does not guarantee it.')
         other_group_box_layout.addWidget(max_label) #, 0, 0, 1, 1)
-        self.max_downloads_spin = QtGui.QSpinBox(self)
+        self.max_downloads_spin = QSpinBox(self)
         self.max_downloads_spin.setMinimum(1)
         self.max_downloads_spin.setMaximum(20)
         self.max_downloads_spin.setProperty('value', c.get(KEY_MAX_DOWNLOADS, DEFAULT_STORE_VALUES[KEY_MAX_DOWNLOADS]))

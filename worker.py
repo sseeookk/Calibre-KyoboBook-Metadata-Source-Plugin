@@ -210,14 +210,14 @@ class Worker(Thread): # Get details
         return re.search('[\?|\&]barcode=([^\&]+)', url).group(1)
 
     def parse_title_series(self, root):
-        title_node = root.xpath('//div[@class="title_icon"]/h1[@class="title"]')
+        title_node = root.xpath('//div[@class="box_detail_point"]/h1[@class="title"]')
         if not title_node:
             return (None, None, None)
         self._removeTags(title_node[0],["script","style"])
         
         title_text = title_node[0].text_content().strip() 
         
-        series_node = root.xpath('//div[@class="title_icon"]/div[@class="info"]')
+        series_node = root.xpath('//div[@class="box_detail_point"]/div[@class="info"]')
         if not series_node:
             return (title_text, None, None)
         series_info = series_node[0].text_content()
@@ -225,14 +225,21 @@ class Worker(Thread): # Get details
         series_name = None
         series_index = None
         if series_info:
-            try:
-                series = series_info.split("|")
-                if len(series) > 1:
-                    series_name = series[0].strip()
-                    series_index = float(series[1].strip())
-            except:
-                series_name = None
-                series_index = None
+            #try:
+            #    series = series_info.split("|")
+            #    if len(series) > 1:
+            #        series_name = series[0].strip()
+            #        series_index = float(series[1].strip())
+            #except:
+            #    series_name = None
+            #    series_index = None
+            match = re.search("\s+(\d+)\s*$",series_info)
+            if match:
+                series_index = match.group(1)
+                series_name = series_info[:-1 * len(match.group(0))]
+            else:
+                series_index = 0
+                series_name = series_info
                 
         return (title_text, series_name, series_index)
 
@@ -307,20 +314,21 @@ class Worker(Thread): # Get details
                 return rating_value
 
     def parse_comments(self, root):
-        description_node = root.xpath('//dl[@class="book_info_detail"]/dd[@class="content"]')
+        description_nodes = root.xpath("//*[preceding-sibling::comment()[. = ' *** s:%s *** '] and following-sibling::comment()[. = ' *** //e:%s *** ']]" % (u'책소개',u'책소개'))
         
         default_append_toc = cfg.DEFAULT_STORE_VALUES[cfg.KEY_APPEND_TOC]
         append_toc = cfg.plugin_prefs[cfg.STORE_NAME].get(cfg.KEY_APPEND_TOC, default_append_toc)
         
         comments = ''
-        if description_node:
-            comments += tostring(description_node[0], method='html', encoding=unicode).strip()
+        if description_nodes:
+            for description_node in description_nodes:
+                comments += tostring(description_node, method='html', encoding=unicode).strip()
             while comments.find('  ') >= 0:
                 comments = comments.replace('  ',' ')
             comments = sanitize_comments_html(comments)
             
         if append_toc:
-            toc_node = root.xpath('//div[@class="book_info"]/h2[@class="book_d_title" and contains(text(),"%s")]/following-sibling::div' % u"목차")
+            toc_node = root.xpath('//div[@class="box_detail_content"]/h2[@class="title_detail_basic" and contains(text(),"%s")]/following-sibling::div' % u"목차")
             if toc_node:
                 toc = tostring(toc_node[0], method='html')
                 toc = sanitize_comments_html(toc)
@@ -332,6 +340,11 @@ class Worker(Thread): # Get details
 
     def parse_cover(self, root):
         # <meta property="og:image" content="http://image.kyobobook.co.kr/images/book/xlarge/547/x9780132990547.jpg"/>
+        # 2016-02-04
+        # <meta property="og:image" content="http://image.kyobobook.co.kr/images/book/medium/196/m9788994909196.jpg"/>
+        # http://image.kyobobook.co.kr/images/book/large/196/l9788994909196.jpg
+        # http://image.kyobobook.co.kr/images/book/xlarge/196/x9788994909196.jpg
+
         imgcol_node = root.xpath('//meta[@property="og:image"]/@content')
         img_url_checked = None
         if imgcol_node:
@@ -370,11 +383,12 @@ class Worker(Thread): # Get details
             return img_url_checked
 
     def parse_isbn(self, root):
-        isbn_node = root.xpath('//div[@class="book_info_basic2"]')
+        isbn_node = root.xpath('//span[@title="ISBN-13"]')
         if isbn_node:
-            match = re.search("isbn(?:\-13)?\s?:\s?([^\s]*)",isbn_node[0].text_content(),re.I)
-            if match:
-                return match.group(1)
+            return isbn_node[0].text_content()
+            #match = re.search("isbn(?:\-13)?\s?:\s?([^\s]*)",isbn_node[0].text_content(),re.I)
+            #if match:
+            #    return match.group(1)
 
     def parse_publisher_and_date(self, root):
         # Publisher is specified within the a :
@@ -409,7 +423,7 @@ class Worker(Thread): # Get details
         category_lookup = cfg.plugin_prefs[cfg.STORE_NAME][cfg.KEY_GET_CATEGORY]
         
         if category_lookup:
-            genres_node = root.xpath('//div[@class="book_info"]/div[@class="belong_area"]/ul[@class="locate"]/li')
+            genres_node = root.xpath('//div[@class="location_zone pathGroup"]/p[@class="location"]')
             #self.log.info("Parsing categories")
             if genres_node:
                 #self.log.info("Found genres_node")
@@ -493,19 +507,18 @@ class Worker(Thread): # Get details
     # Kyobobook 에서 언어를 찾을 수 없을 때
     # 기본 언어로 Korean 을 넣는다.
     def _parse_language(self, root):
+        raw = "Korean"
         lang_node = root.xpath('//div[@class="book_info_basic2"]')
         if lang_node:
             match = re.search("%s\s?:\s?([^\s]*)" % u'언어',lang_node[0].text_content(),re.I)
             if match:
                 raw = match.group(1)
-            else:
-                raw = "Korean"
-            ans = self.lang_map.get(raw, None)
-            if ans:
-                return ans
-            ans = canonicalize_lang(ans)
-            if ans:
-                return ans
+        ans = self.lang_map.get(raw, None)
+        if ans:
+            return ans
+        ans = canonicalize_lang(ans)
+        if ans:
+            return ans
 
     def _removeTags(self, element, tags):
         try:
