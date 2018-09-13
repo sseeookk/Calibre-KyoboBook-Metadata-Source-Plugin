@@ -29,7 +29,7 @@ class Kyobobook(Source):
     name = 'KyoboBook'
     description = _('Downloads metadata and covers from kyobobook.co.kr')
     author = 'YongSeok Choi'
-    version = (0, 2, 0)
+    version = (0, 2, 1)
     minimum_calibre_version = (0, 8, 0)
 
     capabilities = frozenset(['identify', 'cover'])
@@ -142,7 +142,8 @@ class Kyobobook(Source):
                     # by sseeookk
                     # euc-kr at kyobobook
                     # raw = raw.decode('utf-8', errors='replace')
-                    raw = raw.decode('euc-kr', errors='replace')
+                    # raw = raw.decode('euc-kr', errors='replace')
+                    raw = raw.decode('euc-kr', errors='ignore')
                     if not raw:
                         log.error('Failed to get raw result for query: %r' % query)
                         return
@@ -203,7 +204,7 @@ class Kyobobook(Source):
         return None
 
     def _parse_search_isbn_results(self, log, orig_isbn, root, matches, timeout):
-        results = root.xpath('//ul[contains(@class, "domestic") or contains(@class, "abroad")]')
+        results = root.xpath('//div[@class="list_search_result"]//div[@class="title"]/ancestor::tr')
         if not results:
             #log.info('FOUND NO RESULTS:')
             return
@@ -214,7 +215,7 @@ class Kyobobook(Source):
         num = 1
         for result in results:
             log.info('Looking at result:')
-            title_nodes = result.xpath('./li[contains(@class,"title")]/a[contains(@href,"/product/detailView")]')
+            title_nodes = result.xpath('.//div[@class="title"]//a[contains(@href,"/product/detailView")]')
             
             title = ''
             if title_nodes:
@@ -245,7 +246,7 @@ class Kyobobook(Source):
 
 
     def _parse_search_results(self, log, orig_title, orig_authors, root, matches, timeout):
-        results = root.xpath('//ul[contains(@class, "domestic") or contains(@class, "abroad")]')
+        results = root.xpath('//div[@class="list_search_result"]//div[@class="title"]/ancestor::tr')
         if not results:
             #log.info('FOUND NO RESULTS:')
             return
@@ -280,7 +281,9 @@ class Kyobobook(Source):
         num = 1
         for result in results:
             log.info('Looking at result:')
-            title_nodes = result.xpath('./li[contains(@class,"title")]/a[contains(@href,"/product/detailView")]')
+            # /product/detailView - 국내도서 / 외국도서 만 해당된다.
+            # /digital/ebook/ebookDetail - eBook.  or contains(@href,"/digital/ebook/ebookDetail")
+            title_nodes = result.xpath('.//div[@class="title"]//a[contains(@href,"/product/detailView")]')
             
             title = ''
             if title_nodes:
@@ -289,7 +292,7 @@ class Kyobobook(Source):
                 log.info('Could not find title')
                 continue
             # Strip off any series information from the title
-            # log.info('\nFOUND TITLE:',title)
+            # log.info('\nFOUND TITLE:',title)  # console (calibre-debug.exe - 내장 Python 인터프리터, 한글이 안깨진다.)
             log.info('\nFOUND TITLE:',title.encode('euc-kr')) # by sseeookk
             if '(' in title:
                 #log.info('Stripping off series(')

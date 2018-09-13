@@ -80,6 +80,8 @@ class Worker(Thread): # Get details
         # raw = raw.decode('utf-8', errors='replace') #00
         # open('c:\\Kyobobook2.html', 'wb').write(raw)
 
+        raw = raw.decode('euc-kr', 'ignore')
+
         # if '<title>404 - ' in raw:
             # self.log.error('URL malformed: %r'%self.url)
             # return
