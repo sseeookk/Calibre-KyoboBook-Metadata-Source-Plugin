@@ -425,7 +425,7 @@ class KeyValueComboBox(QComboBox):
     def populate_combo(self, selected_key):
         self.clear()
         selected_idx = idx = -1
-        for key, value in self.values.iteritems():
+        for key, value in self.values.items():
             idx = idx + 1
             self.addItem(value)
             if key == selected_key:
@@ -433,7 +433,7 @@ class KeyValueComboBox(QComboBox):
         self.setCurrentIndex(selected_idx)
 
     def selected_key(self):
-        for key, value in self.values.iteritems():
+        for key, value in self.values.items():
             if value == unicode(self.currentText()).strip():
                 return key
 

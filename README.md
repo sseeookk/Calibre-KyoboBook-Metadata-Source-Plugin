@@ -9,8 +9,8 @@ Korean(한글) - [README.ko.md](README.ko.md)
 
 Install
 -------
-1. [release](https://github.com/sseeookk/Calibre-KyoboBook-Metadata-Source-Plugin/releases) - Download the latest "KyoboBook.zip".
-2. calibre - Prefrerence -Plugins - Load plugin from file 
+1. Download the latest "KyoboBook.zip" - [releases](https://github.com/sseeookk/Calibre-KyoboBook-Metadata-Source-Plugin/releases).
+2. calibre - Prefrerence - Plugins - Load plugin from file 
 
 Calibre Plugins Forum
 ---------------------

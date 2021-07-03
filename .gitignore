@@ -213,3 +213,18 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+
+
+.gitignore
+
+.idea
+
+_0_Auto_zip_add_init.bat
+_1_make_zip.bat
+_2_add_plugin.bat
+_3_debug_init.bat
+
+kyobobook*.zip
+
+

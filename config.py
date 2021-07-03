@@ -123,7 +123,8 @@ class ConfigWidget(DefaultConfigWidget):
     def commit(self):
         DefaultConfigWidget.commit(self)
         new_prefs = {}
-        new_prefs[KEY_MAX_DOWNLOADS] = int(unicode(self.max_downloads_spin.value()))
+        # new_prefs[KEY_MAX_DOWNLOADS] = int(unicode(self.max_downloads_spin.value()))
+        new_prefs[KEY_MAX_DOWNLOADS] = int(self.max_downloads_spin.value())
         new_prefs[KEY_GET_CATEGORY] = self.get_category_checkbox.checkState() == Qt.Checked
         new_prefs[KEY_GET_ALL_AUTHORS] = self.all_authors_checkbox.checkState() == Qt.Checked
         new_prefs[KEY_APPEND_TOC] = self.toc_checkbox.checkState() == Qt.Checked

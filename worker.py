@@ -20,6 +20,9 @@ from calibre.utils.localization import canonicalize_lang
 
 import calibre_plugins.kyobobook.config as cfg
 
+from six import text_type as unicode
+
+
 class Worker(Thread): # Get details
 
     '''
@@ -48,7 +51,7 @@ class Worker(Thread): # Get details
                 'kor': ('Korean', u'한국어','KOR'),
                 }
         self.lang_map = {}
-        for code, names in lm.iteritems():
+        for code, names in lm.items():
             for name in names:
                 self.lang_map[name] = code
 
@@ -279,7 +282,9 @@ class Worker(Thread): # Get details
             elif isinstance(el, lxml.etree._ElementUnicodeResult):
                 if el.strip():
                     contrib = el.strip()
-        item = authors_type_map.items()
+        # item = authors_type_map.items()
+        # item.reverse()
+        item = list(authors_type_map.items())
         item.reverse()
         authors_type_map = OrderedDict(item)
 
@@ -291,7 +296,7 @@ class Worker(Thread): # Get details
         get_all_authors = cfg.plugin_prefs[cfg.STORE_NAME][cfg.KEY_GET_ALL_AUTHORS]
         authors = []
         valid_contrib = None
-        for a, contrib in authors_type_map.iteritems():
+        for a, contrib in authors_type_map.items():
             if get_all_authors:
                 authors.append(a)
             else:
@@ -454,7 +459,7 @@ class Worker(Thread): # Get details
     def _convert_genres_to_calibre_tags(self, genre_tags):
         # for each tag, add if we have a dictionary lookup
         calibre_tag_lookup = cfg.plugin_prefs[cfg.STORE_NAME][cfg.KEY_GENRE_MAPPINGS]
-        calibre_tag_map = dict((k.lower(),v) for (k,v) in calibre_tag_lookup.iteritems())
+        calibre_tag_map = dict((k.lower(),v) for (k,v) in calibre_tag_lookup.items())
         tags_to_add = list()
         for genre_tag in genre_tags:
             tags = calibre_tag_map.get(genre_tag.lower(), None)

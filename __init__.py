@@ -8,8 +8,10 @@ __copyright__ = '2014, YongSeok Choi <sseeookk@gmail.com> based on the Goodreads
 __docformat__ = 'restructuredtext en'
 
 import time, re
-from urllib import quote
-from Queue import Queue, Empty
+# from urllib import quote
+from six.moves.urllib.parse import quote
+# from Queue import Queue, Empty
+from queue import Queue, Empty
 from collections import OrderedDict
 
 from lxml.html import fromstring, tostring
@@ -20,6 +22,9 @@ from calibre.ebooks.metadata.sources.base import Source
 from calibre.utils.icu import lower
 from calibre.utils.cleantext import clean_ascii_chars
 
+from six import text_type as unicode
+
+
 class Kyobobook(Source):
     '''
     This plugin is only for books in the Korean language.
@@ -29,7 +34,7 @@ class Kyobobook(Source):
     name = 'KyoboBook'
     description = _('Downloads metadata and covers from kyobobook.co.kr')
     author = 'YongSeok Choi'
-    version = (0, 2, 1)
+    version = (1, 0, 0)
     minimum_calibre_version = (0, 8, 0)
 
     capabilities = frozenset(['identify', 'cover'])
@@ -292,8 +297,8 @@ class Kyobobook(Source):
                 log.info('Could not find title')
                 continue
             # Strip off any series information from the title
-            # log.info('\nFOUND TITLE:',title)  # console (calibre-debug.exe - 내장 Python 인터프리터, 한글이 안깨진다.)
-            log.info('\nFOUND TITLE:',title.encode('euc-kr')) # by sseeookk
+            log.info('\nFOUND TITLE:',title)  # console (calibre-debug.exe - 내장 Python 인터프리터, 한글이 안깨진다.)
+            # log.info('\nFOUND TITLE:',title.encode('euc-kr')) # by sseeookk
             if '(' in title:
                 #log.info('Stripping off series(')
                 title = title.rpartition('(')[0].strip()
@@ -307,11 +312,11 @@ class Kyobobook(Source):
                     authors.append(author.strip())
             
             #log.info('Looking at tokens:',author)
-            #log.info('Considering search result: %s %s' % (title, authors)) 
-            log.info('Considering search result: ' , title.encode('euc-kr') ,",", '|'.join(authors).encode('euc-kr')) 
+            log.info('Considering search result: %s %s' % (title, authors))
+            # log.info('Considering search result: ' , title.encode('euc-kr') ,",", '|'.join(authors).encode('euc-kr'))
             if not ismatch(title, authors):
-                #log.error('Rejecting as not close enough match: %s %s' % (title, authors))
-                log.error('Rejecting as not close enough match: ' , title.encode('euc-kr') ,",", '|'.join(authors).encode('euc-kr'))
+                log.error('Rejecting as not close enough match: %s %s' % (title, authors))
+                # log.error('Rejecting as not close enough match: ' , title.encode('euc-kr') ,",", '|'.join(authors).encode('euc-kr'))
                 continue
 
             result_url = title_nodes[0].get('href')
