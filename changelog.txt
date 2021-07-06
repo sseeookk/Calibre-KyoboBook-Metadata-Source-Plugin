@@ -1,3 +1,10 @@
+[B]Version 1.0.2[/B] - 2021-07-07
+[LIST]
+[*]Fix: Can use Author Name and Korean for Author Name.
+[*]Fix: Download cover for Kyobo website changes.
+[*]Fix: series info for Kyobo website changes.
+[/LIST]
+
 [B]Version 1.0.1[/B] - 2021-07-06
 [LIST]
 [*]Fix: Download cover for Python 3 support.

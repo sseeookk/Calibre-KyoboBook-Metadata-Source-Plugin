@@ -45,7 +45,7 @@ class Kyobobook(Source):
     name = 'KyoboBook'
     description = _('Downloads metadata and covers from kyobobook.co.kr')
     author = 'YongSeok Choi'
-    version = (1, 0, 1)
+    version = (1, 0, 2)
     minimum_calibre_version = (0, 8, 0)
     
     ID_NAME = 'kyobobook'
@@ -111,15 +111,15 @@ class Kyobobook(Source):
             tokens += title_tokens
             # tokens += [quote(t.encode('euc-kr') if isinstance(t, unicode) else t) for t in title_tokens]  # sseeookk
             
-            # TODO: No tokent is returned for korean name.
+            # TODO: No token is returned for korean name.
             # 한글이름일 경우 token 이 반환 안된다.
             # by sseeookk ,  20140315 
-            # author_tokens = self.get_author_tokens(authors, only_first_author=True)
-            authors_encode = None
-            if authors:
-                authors_encode = list(a.encode('utf-8') for a in authors)
-            author_tokens = self.get_author_tokens(authors_encode, only_first_author=True)
-            # tokens += author_tokens
+            author_tokens = self.get_author_tokens(authors, only_first_author=True)
+            # authors_encode = None
+            # if authors:
+            #     authors_encode = list(a.encode('utf-8') for a in authors)
+            # author_tokens = self.get_author_tokens(authors_encode, only_first_author=True)
+            tokens += author_tokens
             
             # tokens = [quote(t.encode('utf-8') if isinstance(t, unicode) else t) for t in tokens]
             # tokens += [quote(t.encode('euc-kr')) for t in author_tokens]  # kyobobook by sseeookk
@@ -137,6 +137,33 @@ class Kyobobook(Source):
         # # q = q.encode('utf-8')
         # return self.BASE_URL + '' + q
         return urljoin(self.BASE_URL, q)
+    
+    # 세글자 이상만을 두글자 이상으로 override 함
+    def get_author_tokens(self, authors, only_first_author=True):
+        """
+        Take a list of authors and return a list of tokens useful for an
+        AND search query. This function tries to return tokens in
+        first name middle names last name order, by assuming that if a comma is
+        in the author name, the name is in lastname, other names form.
+        """
+        
+        if authors:
+            # Leave ' in there for Irish names
+            remove_pat = re.compile(r'[!@#$%^&*()（）「」{}`~"\s\[\]/]')
+            replace_pat = re.compile(r'[-+.:;,，。；：]')
+            if only_first_author:
+                authors = authors[:1]
+            for au in authors:
+                has_comma = ',' in str(au)
+                au = replace_pat.sub(' ', au)
+                parts = au.split()
+                if has_comma:
+                    # au probably in ln, fn form
+                    parts = parts[1:] + parts[:1]
+                for tok in parts:
+                    tok = remove_pat.sub('', tok).strip()
+                    if len(tok) > 1 and tok.lower() not in ('von', 'van', _('Unknown').lower()):
+                        yield tok
     
     def get_cached_cover_url(self, identifiers):
         url = None
@@ -175,10 +202,7 @@ class Kyobobook(Source):
             try:
                 log.info('Querying: %s' % query)
                 response = br.open_novisit(query, timeout=timeout)
-                # headers = response.info()
-                # log.info('headers ===========================')
-                # log.info(headers)
-                # log.info('headers ===========================')
+                
                 try:
                     raw = response.read().strip()
                     # open('E:\\t11.html', 'wb').write(raw) # XXXX
@@ -188,7 +212,7 @@ class Kyobobook(Source):
                     raw = raw.decode('utf-8', errors='replace')
                     # # raw = raw.decode('euc-kr', errors='replace')
                     # raw = raw.decode('euc-kr', errors='ignore')
-                    # log.info(raw)
+                    
                     if not raw:
                         log.error('Failed to get raw result for query: %r' % query)
                         return
@@ -343,7 +367,8 @@ class Kyobobook(Source):
                 # log.info('Stripping off series(')
                 title = title.rpartition('(')[0].strip()
             
-            contributors = result.xpath('.//a[@class="author"]')
+            # contributors = result.xpath('.//a[@class="author"]')  # 2016-02-04
+            contributors = result.xpath('.//div[@class="author"]//a')  # 2021-07-06
             authors = []
             for c in contributors:
                 author = c.text_content()
@@ -352,9 +377,9 @@ class Kyobobook(Source):
                     authors.append(author.strip())
             
             # log.info('Looking at tokens:',author)
-            log.info('Considering search result: %s %s' % (title, authors))
+            log.info('Considering search result: %s :: %s' % (title, authors))
             if not ismatch(title, authors):
-                log.error('Rejecting as not close enough match: %s %s' % (title, authors))
+                log.error('Rejecting as not close enough match: %s :: %s' % (title, authors))
                 continue
             
             result_url = title_nodes[0].get('href')
@@ -462,6 +487,5 @@ if __name__ == '__main__':  # tests
                 [title_test('높고 푸른 사다리', exact=False),
                  authors_test(['공지영'])]
             ),
-        
         ]
     )

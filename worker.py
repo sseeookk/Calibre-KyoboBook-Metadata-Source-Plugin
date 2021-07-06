@@ -26,6 +26,8 @@ import calibre_plugins.kyobobook.config as cfg
 
 from six import text_type as unicode
 
+import contextlib
+
 
 class Worker(Thread):  # Get details
     """
@@ -223,6 +225,18 @@ class Worker(Thread):  # Get details
         
         title_text = title_node[0].text_content().strip()
         
+        # <div class="info">
+        #
+        #
+        # 				역사인물찾기 10
+        #
+        # 				<span class="line">|</span>
+        # 				개정판 2판
+        #
+        # 				<span class="line">|</span>
+        # 				양장
+        #
+        # 			</div>
         series_node = root.xpath('//div[@class="box_detail_point"]/div[@class="info"]')
         if not series_node:
             return title_text, None, None
@@ -239,13 +253,25 @@ class Worker(Thread):  # Get details
             # except Exception as e:
             #    series_name = None
             #    series_index = None
-            match = re.search(r"\s+(\d+)\s*$", series_info)
-            if match:
-                series_index = match.group(1)
-                series_name = series_info[:-1 * len(match.group(0))]
-            else:
-                series_index = 0
-                series_name = series_info
+            
+            # match = re.search(r"\s+(\d+)\s*$", series_info)
+            # if match:
+            #     series_index = match.group(1)
+            #     series_name = series_info[:-1 * len(match.group(0))]
+            # else:
+            #     series_index = 0
+            #     series_name = series_info
+            
+            # 2021-07-06
+            with contextlib.suppress(Exception):  # pass exception
+                series = series_info.split("|")
+                if len(series) > 1:
+                    # series_name = series[0].strip()
+                    # series_index = float(series[1].strip())
+                    match = re.search(r"^(.*?)\s+(\d+)$", series[0].strip())
+                    if match:
+                        series_name = match.group(1)
+                        series_index = match.group(2)
         
         return title_text, series_name, series_index
     
@@ -369,22 +395,19 @@ class Worker(Thread):  # Get details
             
             # http://image.kyobobook.co.kr/newimages/apps/b2b_academy/common/noimage_150_215.gif
             if "noimage" not in img_url:
-                try:
+                with contextlib.suppress(Exception):  # pass Exceptions
                     # Unfortunately Kyobobook sometimes have broken links so we need to do
                     # an additional request to see if the URL actually exists
+                    # meta 노드가 있어도 파일이 없다고 나오는 경우가 있다.
                     info = self.browser.open_novisit(img_url, timeout=self.timeout).info()
                     if int(info.get('Content-Length')) > 1000:
                         img_url_checked = img_url
                     else:
                         self.log.warning('Broken image(Large) for url: %s' % img_url)
-                except AttributeError:
-                    self.log.exception(info)
-                    pass
-                except Exception as e:
-                    self.log.exception("Error at parse_cover", exe_info=e)
-                    pass
+                
         if not img_url_checked:
-            imgcol_node = root.xpath('//p[@class="book_img_box"]/img/@src')
+            # imgcol_node = root.xpath('//p[@class="book_img_box"]/img/@src')  # 2016-02-04
+            imgcol_node = root.xpath('//div[@class="cover"]//img/@src')  # 2021-07-06
             if imgcol_node:
                 img_url = imgcol_node[0]
                 
@@ -399,7 +422,7 @@ class Worker(Thread):  # Get details
                         else:
                             self.log.warning('Broken image(small) for url: %s' % img_url)
                     except Exception as e:
-                        self.log.exception("Error at parse_cover", exe_info=e)
+                        self.log.exception("Error at parse_cover (img tag)", exe_info=e)
                         pass
         if img_url_checked:
             return img_url_checked
