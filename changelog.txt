@@ -1,3 +1,8 @@
+[B]Version 1.0.1[/B] - 2021-07-06
+[LIST]
+[*]Fix: Download cover for Python 3 support.
+[/LIST]
+
 [B]Version 1.0.0[/B] - 2021-07-03
 [LIST]
 [*]Update: Changes for Python 3 support in calibre5.
